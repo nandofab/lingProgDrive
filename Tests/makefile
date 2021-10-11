@@ -1,20 +1,41 @@
 CC = g++
 LD = g++
 
-CFLAGS = -Wall -I/usr/include/python3.6
-LFLAGS = -Wall 
+CFLAGS = -Wall -fpie $(shell python3-config --cflags)
+LFLAGS = -Wall $(shell python3-config --ldflags)
 
-TESTEINICIALOBJS = main.o 
+TESTE1OBJS = teste1.o
+TESTE2OBJS = teste2.o 
+TESTE3OBJS = teste3.o 
+TESTE4OBJS = teste4.o 
+MAINOBJS = main.o 
 
-DRIVEPP = testeInicial
+DRIVEPP = teste1\
+		  teste2\
+		  teste3\
+		  teste4\
+		  main
 
 .cpp.o:
 	$(CC) $(CFLAGS) -c $<
 
 all: $(DRIVEPP)
 
-testeInicial: $(TESTEINICIALOBJS)
-	$(LD) $(LFLAGS) -o $@ $(TESTEINICIALOBJS) -lm
+teste1: $(TESTE1OBJS)
+	$(LD) -o $@ $(TESTE1OBJS) $(LFLAGS)
+
+teste2: $(TESTE2OBJS)
+	$(LD) -o $@ $(TESTE2OBJS) $(LFLAGS)
+
+teste3: $(TESTE3OBJS)
+	$(LD) -o $@ $(TESTE3OBJS) $(LFLAGS)
+
+teste4: $(TESTE4OBJS)
+	$(LD) -o $@ $(TESTE4OBJS) $(LFLAGS) 
+
+main: $(MAINOBJS)
+	$(LD) -o $@ $(MAINOBJS) $(LFLAGS) 
+
 
 clean:
 	rm -f *.o $(DRIVEPP)
