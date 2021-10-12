@@ -1,5 +1,4 @@
 from __future__ import print_function
-from serviceHelper import Create_Service
 import os.path
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -8,17 +7,40 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.http import MediaFileUpload
 
 
+<<<<<<< HEAD
 
 CLIENT_SECRET_FILE = 'client_secret_248993973959-p186h3ftohum7gb6hhrae3da0btge0d9.apps.googleusercontent.com.json'
+=======
+CLIENT_SECRET_FILE = 'credentials.json'
+>>>>>>> 01d2d2c310a84b75ac284be78e33d4182536f0bb
 API_NAME = 'drive'
 API_VERSION = "v3"
 SCOPES = ['https://www.googleapis.com/auth/drive'] 
 
-# If modifying these scopes, delete the file token.json.
+def conexaoDrive():
+    creds = None
+    # O arquivo token.json armazena o acesso do usário e os refresh tokens, 
+    # é criado automaticamente quando a autoriazação é concedida pela primeira vez
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    # Se não tiver autorização do usuário, pede.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
+            creds = flow.run_local_server(port=0)
+        # Salva a autorização
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
+    service = build(API_NAME, API_VERSION , credentials=creds)
+    return service 
+
+
 def criarPasta(nomePasta):
 #    service = build('drive', 'v3', credentials=creds)
     contadorBarras = False
-    service = Create_Service(CLIENT_SECRET_FILE,API_NAME,API_VERSION,SCOPES)
+    service = conexaoDrive()
     nomeOriginal = nomePasta
     
 
@@ -65,7 +87,7 @@ def criarPasta(nomePasta):
 
 
 def busca (nomePasta):
-    service = Create_Service(CLIENT_SECRET_FILE,API_NAME,API_VERSION,SCOPES)
+    service = conexaoDrive()
     page_token = None
     
     temporario = nomePasta.split("/")
@@ -98,7 +120,10 @@ def busca (nomePasta):
 
     return file.get('id')
 
-
+def listarDriver():
+    service = conexaoDrive()
+    response = service.files().list().execute()
+    print(response)
 
 #def upload(origem, destino):
 #    UPLOAD
