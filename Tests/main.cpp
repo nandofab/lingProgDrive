@@ -17,8 +17,8 @@ int main(int argc, char *argv[])
             args.push_back(argv[cArg]);
         
         CPyObject pyResultado = usePyFunc("pyFuncs",nomeDafuncao,args); // executa a função desejada em python retornando um CPyObject
-        auto cResultado = _PyUnicode_AsString(pyResultado);                 // converte o resultado de CPyObject para o desejado em C
-        cout<<cResultado<<endl;                                             // printa esse resultado
+        //auto cResultado = _PyUnicode_AsString(pyResultado);                 // converte o resultado de CPyObject para o desejado em C
+        //cout<<cResultado<<endl;                                             // printa esse resultado
     }   
     catch(PyModuleException& exception){
         cout << "***** Erro: " << exception.what() << " *****" <<endl;

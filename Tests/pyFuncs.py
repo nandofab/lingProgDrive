@@ -33,11 +33,9 @@ def conexaoDrive():
 
 
 def criarPasta(nomePasta):
-#    service = build('drive', 'v3', credentials=creds)
     contadorBarras = False
     service = conexaoDrive()
     nomeOriginal = nomePasta
-    
 
     for i in range(len(nomePasta)): # Se o usuario inserir Pasta1/Pasta2, por exemplo, precisamos chamar a funcao busca para saber se Pasta1 existe
         if (nomePasta[i]=='/'):
@@ -57,30 +55,42 @@ def criarPasta(nomePasta):
         else:
             return "O caminho especificado nao existe"
 
-        file = service.files().create(body=file_metadata,
-                                        fields='id').execute()
-    
+        file = service.files().create(body=file_metadata,fields='id').execute()
    
-        #print('Folder ID: %s' % file.get('id'))
-
-
-
-
-
     if ( not contadorBarras):               # O usuario quer inserir na raiz. Exemplo:  pasta Teste1 apenas, e nao Teste1/Teste2
         file_metadata = {
             'name': nomePasta,
             'mimeType': 'application/vnd.google-apps.folder'
         }
-        print("entrou")         
-        file = service.files().create(body=file_metadata,
-                                fields='id').execute()
- 
-  
-
+        file = service.files().create(body=file_metadata,fields='id').execute()
+    
     return "Pasta " + nomePasta + " criada. Caminho: " + nomeOriginal 
 
 
+def listarDrive():
+    service = conexaoDrive()
+    response = service.files().list().execute()
+    for file in response.get('files', []):
+            print(f"Name = {file.get('name')} ID = {file.get('id')}  Parents= {file.get('parents')}")
+
+
+def buscaDados(caminho):
+    service = conexaoDrive()        
+    listaCaminho = caminho.split("/")
+    listaIDs = 'root'
+    resultado = []
+    for nome in listaCaminho :
+        response = service.files().list(
+                q = f"name='{nome}' and '{listaIDs}' in parents",
+                spaces='drive',
+        ).execute()
+        encontrado = response.get('files')[0]                
+        resultado.append(encontrado)
+        listaIDs = encontrado['id']
+        print(encontrado)
+    print(resultado)
+
+    
 def busca (nomePasta):
     service = conexaoDrive()
     page_token = None
@@ -115,10 +125,7 @@ def busca (nomePasta):
 
     return file.get('id')
 
-def listarDriver():
-    service = conexaoDrive()
-    response = service.files().list().execute()
-    print(response)
+
 
 #def upload(origem, destino):
 #    UPLOAD
@@ -130,12 +137,3 @@ def listarDriver():
 
 
  #   return  "Upload feito com sucesso"
-
-
-
-# https://developers.google.com/drive/api/v3/mime-types
-# https://github.com/abhyamgupta123/Drive_Services_Project
-
-#if __name__ == '__main__':
- #   main()
-
