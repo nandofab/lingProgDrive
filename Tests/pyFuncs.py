@@ -54,7 +54,7 @@ def criarPasta(caminho):
     }
     file = service.files().create(body=file_metadata,fields='id').execute()
     
-    print("Pasta " + nomePasta + " criada. Caminho: Meu Drive/ " + caminhoDrive)
+    print("Pasta " + nomePasta + " criada. Caminho: ./" + caminhoDrive)
 
 def listarDrive():
     service = conexaoDrive()
@@ -103,31 +103,24 @@ def downloadArquivo(localizacao,destino):
         with open(os.path.join(destino,arquivo['name']),'wb') as arquivo:   # cria o arquivo com o nome escolhido no destino desejado e preenche ele com o binário baixado
             arquivo.write(fh.read())
             arquivo.close()   
-
-        print("\nArquivo baixado com sucesso")
     except TypeError:
-        print("Este caminho inexiste no drive")
+        return "***** Erro: Este caminho inexiste no drive *****"
     except FileNotFoundError:
-        print("Destino inexistente")
+        return "***** Erro: Destino inexistente *****"
     except :
-        print("Nao eh possivel baixar pastas. Somente arquivos")
+        return "***** Erro: Nao eh possivel baixar pastas,somente arquivos *****"
 
 
-def upload(origem,destino):
+def uploadArquivo(origem,destino):
     nomeArquivo = origem.split('/')[-1]
     service = conexaoDrive()    
     parents = []
-
-    if(destino.find('/') == -1):
-        if(destino != "MeuDrive"):
-            dados = buscaDados(destino)
-            pai = dados[-1]
-            parents.append(pai['id'])        
-    else:    
+    
+    if(destino != "MeuDrive"):
         dados = buscaDados(destino)
-        pai = dados[-2]
-        parents.append(pai['id'])
- 
+        pai = dados[-1]
+        parents.append(pai['id'])        
+     
     try:
         service = conexaoDrive()    
         file_metadata = {
@@ -143,13 +136,13 @@ def upload(origem,destino):
         return "Upload feito com sucesso"
     
     except FileNotFoundError:  
-        return "Caminho ou arquivo de origem inexistente."        
+        return "***** Erro: Caminho ou arquivo de origem inexistente. *****"        
   
     except PermissionError:
-        return "Permissao negada."
+        return "***** Erro: Permissao negada. *****"
 
     except:
-        return "Destino inexistente"
+        return "***** Erro: Destino inexistente *****"
 
 
 def moverArquivo(origem, destino):
@@ -166,7 +159,7 @@ def moverArquivo(origem, destino):
         dados_destino= dados_destino[-1]
         id_destino.append(dados_destino['id'])
         id_destino = id_destino[0]
-        # print(id_destino)
+
         # Retrieve the existing parents to remove
         file = service.files().get(fileId=id_origem,
                                      fields='parents').execute()
@@ -181,62 +174,9 @@ def moverArquivo(origem, destino):
             sys.stdout.write('\r')
             sys.stdout.write("[%-20s] %d%%" % ('='*i, 5*i))
             sys.stdout.flush()
-            sleep(0.25)
-
-  
-        print ("Arquivo movido com sucesso")
+            sleep(0.25)  
+        return "Arquivo movido com sucesso"
     except TypeError:
-        print("O arquivo de origem ou o local de destino nao existe")
+        return "***** Erro:O arquivo de origem ou o local de destino nao existe ***** "
     except:
-        print("Erro desconhecido")
-
-
-
-
-
-#def busca (nomePasta):
-  #  service = conexaoDrive()
- #   page_token = None
-   # 
-   # temporario = nomePasta.split("/")
-   # print(temporario)
-    #nomePasta = temporario[len(temporario)-2]
-   # print(nomePasta1)
-    
-    #while True:
-   # response =   service.files().list(q= "mimeType='application/vnd.google-apps.folder' and name = '%s' " %(nomePasta),
-    #                                                spaces='drive',
-     #                                               fields='nextPageToken, files(id, name)',
-      #                                              pageToken=page_token).execute()
-    
-        #print(response.get('files',[]))
-   # if  (response.get('files',[]) ==[]):
- #           return None
-    #    #if (response.get('files',[])) 
-           # return "O arquivo " + nomePasta + " nao foi encontrado" 
-  #  for file in response.get('files', []):
-        
-       # Process change
-           # print ('Found file: %s (%s)' % (file.get('name'), file.get('id')))
-   #     break
-            #page_token = response.get('nextPageToken', None)
-       
-       #if page_token is None:
-        #    break
-   #     break 
-#
-
-  #  return file.get('id')
-
-
-
-#def upload(origem, destino):
-#    UPLOAD
- #   fmeiile_metadata = {'name': 'photo.jpg'}
- #   media = MediaFileUpload('photo.jpg', mimetype='image/jpeg')
- #   file = service.files().create(body=file_metadata,
- ##                                       media_body=media,
- #                                       fields='id').execute()
-
-
- #   return  "Upload feito com sucesso"
+        return "***** Erro: Erro desconhecido *****"
