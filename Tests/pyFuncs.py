@@ -7,14 +7,12 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
+from time import sleep
+import sys
 
 
-<<<<<<< HEAD
 
-CLIENT_SECRET_FILE = 'client_secret_248993973959-p186h3ftohum7gb6hhrae3da0btge0d9.apps.googleusercontent.com.json'
-=======
 CLIENT_SECRET_FILE = 'credentials.json'
->>>>>>> 01d2d2c310a84b75ac284be78e33d4182536f0bb
 API_NAME = 'drive'
 API_VERSION = "v3"
 SCOPES = ['https://www.googleapis.com/auth/drive'] 
@@ -42,12 +40,18 @@ def conexaoDrive():
 def criarPasta(caminho):
     caminhoDrive,lixo,nomePasta = caminho.rpartition('/')
     service = conexaoDrive()    
-    parents = []
+    parents = [] 
     if(caminho.find('/') != -1):
         dados = buscaDados(caminhoDrive)
         pai = dados[-1]
+        #print(pai)
+        if (pai=="1"):
+            print( "Caminho de destino inexistente")
+            return 1
         parents.append(pai['id'])
-    print(parents)    
+    print(parents)   
+    
+    
     file_metadata = {
         'name': nomePasta,
         'parents':parents,
@@ -65,45 +69,67 @@ def listarDrive():
 
 
 def buscaDados(caminho):
-    service = conexaoDrive()                                            # inicia o serviço  
-    listaCaminho = caminho.split("/")                                   # cria uma lista em que cada elemento da lista é uma pasta do caminho
-    id_pai = 'root'                                                     # inicialmente o id pai é o root
-    resultado = []                                                      # armazena todos os dados das pastas durante o caminho
-    for nome in listaCaminho :                                          # para cada arquivo ou pasta do caminho
-        response = service.files().list(                                # faz um request desse arquivo ou pasta dentro do escopo "My Drive"      
-                q = f"name='{nome}' and '{id_pai}' in parents",         # pelo nome e que tenha como pai o ultimo valor de id_pai
-                spaces='drive',
-        ).execute()
-        encontrado = response.get('files')[0]                           # recupera os dados do arquivo ou pasta encontrada      
-        resultado.append(encontrado)                                    # O resultado consiste dos dados de todos os arquivos e pastas do caminho        
-        id_pai = encontrado['id']                                       # atualiza o id_pai ao longo do caminho
-        print(encontrado)
-    print(resultado)
-    return resultado                                                    # Retorna o resultado
-
+    try:
+        service = conexaoDrive()                                            # inicia o serviço  
+        listaCaminho = caminho.split("/")                                   # cria uma lista em que cada elemento da lista é uma pasta do caminho
+        id_pai = 'root'                                                     # inicialmente o id pai é o root
+        resultado = []                                                      # armazena todos os dados das pastas durante o caminho
+        for nome in listaCaminho :                                          # para cada arquivo ou pasta do caminho
+            response = service.files().list(                                # faz um request desse arquivo ou pasta dentro do escopo "My Drive"      
+                    q = f"name='{nome}' and '{id_pai}' in parents",         # pelo nome e que tenha como pai o ultimo valor de id_pai
+                    spaces='drive',
+            ).execute()
+            encontrado = response.get('files')[0]                           # recupera os dados do arquivo ou pasta encontrada      
+            resultado.append(encontrado)                                    # O resultado consiste dos dados de todos os arquivos e pastas do caminho        
+            id_pai = encontrado['id']                                       # atualiza o id_pai ao longo do caminho
+           # print(encontrado)
+        #print(resultado)
+        return resultado # Retorna o resultado
+    except IndexError:
+        return "1"
 def downloadArquivo(localizacao,destino):                       
-    service = conexaoDrive()
-    dados = buscaDados(localizacao)                                     # Busca os dados dos arquivos ao longo da localização no drive                    
-    arquivo = dados[-1]                                                 # o arquivo que se deseja baixar é o ultimo dos dados
-    request = service.files().get_media(fileId=arquivo['id'])           # faz um request pra pegar a mídia do dado
-    fh = io.BytesIO()
-    downloader = MediaIoBaseDownload(fd=fh,request=request)             # prepara o downloader
-    terminou = False
-    progresso = tqdm(total=100)                                         # configura a barra de download
-    while not terminou:
-        status,terminou = downloader.next_chunk()                       # baixa o próximo pedaço
-        progresso.update(status.progress() * 100)                       # atualiza a barra de download
+    try:
+        service = conexaoDrive()
+        dados = buscaDados(localizacao)                                     # Busca os dados dos arquivos ao longo da localização no drive                    
+        arquivo = dados[-1]                                                 # o arquivo que se deseja baixar é o ultimo dos dados
+        
+       # if (arquivo.find('.'):
+        #    print(arquivo)
+        request = service.files().get_media(fileId=arquivo['id'])           # faz um request pra pegar a mídia do dado
+        fh = io.BytesIO()
+        downloader = MediaIoBaseDownload(fd=fh,request=request)             # prepara o downloader
+        terminou = False
+        progresso = tqdm(total=100)                                         # configura a barra de download
+     
+        while not terminou:
+            status,terminou = downloader.next_chunk()                       # baixa o próximo pedaço
+            progresso.update(status.progress() * 100)                       # atualiza a barra de download
 
-    fh.seek(0)
-    with open(os.path.join(destino,arquivo['name']),'wb') as arquivo:   # cria o arquivo com o nome escolhido no destino desejado e preenche ele com o binário baixado
-        arquivo.write(fh.read())
-        arquivo.close()
+        fh.seek(0)
+        with open(os.path.join(destino,arquivo['name']),'wb') as arquivo:   # cria o arquivo com o nome escolhido no destino desejado e preenche ele com o binário baixado
+            arquivo.write(fh.read())
+            arquivo.close()
+       
+    #    while not terminou:
+     #       status,terminou = downloader.next_chunk()                       # baixa o próximo pedaço
+      #      progresso.update(status.progress() * 100)# atualiza a barra de download
 
+    #    for i in range(21):
+     #       sys.stdout.write('\r')
+      #      sys.stdout.write("[%-20s] %d%%" % ('='*i, 5*i))
+       #     sys.stdout.flush()
+        #    sleep(0.25)
 
+        print("\nArquivo baixado com sucesso")
 
+    except TypeError:
+        print("Este caminho inexiste no drive")
 
+    except FileNotFoundError:
+        print("Destino inexistente")
 
-
+    except :
+        print("Nao eh possivel baixar pastas. Somente arquivos")
 
 
 
