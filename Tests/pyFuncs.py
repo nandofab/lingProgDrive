@@ -156,6 +156,15 @@ def moverArquivo(origem, destino):
                                 addParents=id_destino,
                                 removeParents=previous_parents,
                                 fields='id, parents').execute()
+ 
+        for i in range(21):
+            sys.stdout.write('\r')
+            sys.stdout.write("[%-20s] %d%%" % ('='*i, 5*i))
+            sys.stdout.flush()
+            sleep(0.25)
+
+  
+        print ("Arquivo movido com sucesso")
     except TypeError:
         print("O arquivo de origem ou o local de destino nao existe")
     except:
