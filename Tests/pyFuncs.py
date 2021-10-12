@@ -10,8 +10,6 @@ from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from time import sleep
 import sys
 
-
-
 CLIENT_SECRET_FILE = 'credentials.json'
 API_NAME = 'drive'
 API_VERSION = "v3"
@@ -49,9 +47,6 @@ def criarPasta(caminho):
             print( "Caminho de destino inexistente")
             return 1
         parents.append(pai['id'])
-   # print(parents)   
-    
-    
     file_metadata = {
         'name': nomePasta,
         'parents':parents,
@@ -86,15 +81,14 @@ def buscaDados(caminho):
         #print(resultado)
         return resultado # Retorna o resultado
     except IndexError:
-        return "1"
+        return None
+
 def downloadArquivo(localizacao,destino):                       
     try:
         service = conexaoDrive()
         dados = buscaDados(localizacao)                                     # Busca os dados dos arquivos ao longo da localização no drive                    
         arquivo = dados[-1]                                                 # o arquivo que se deseja baixar é o ultimo dos dados
-        
-       # if (arquivo.find('.'):
-        #    print(arquivo)
+      
         request = service.files().get_media(fileId=arquivo['id'])           # faz um request pra pegar a mídia do dado
         fh = io.BytesIO()
         downloader = MediaIoBaseDownload(fd=fh,request=request)             # prepara o downloader
@@ -108,28 +102,54 @@ def downloadArquivo(localizacao,destino):
         fh.seek(0)
         with open(os.path.join(destino,arquivo['name']),'wb') as arquivo:   # cria o arquivo com o nome escolhido no destino desejado e preenche ele com o binário baixado
             arquivo.write(fh.read())
-            arquivo.close()
-       
-    #    while not terminou:
-     #       status,terminou = downloader.next_chunk()                       # baixa o próximo pedaço
-      #      progresso.update(status.progress() * 100)# atualiza a barra de download
-
-    #    for i in range(21):
-     #       sys.stdout.write('\r')
-      #      sys.stdout.write("[%-20s] %d%%" % ('='*i, 5*i))
-       #     sys.stdout.flush()
-        #    sleep(0.25)
+            arquivo.close()   
 
         print("\nArquivo baixado com sucesso")
-
     except TypeError:
         print("Este caminho inexiste no drive")
-
     except FileNotFoundError:
         print("Destino inexistente")
-
     except :
         print("Nao eh possivel baixar pastas. Somente arquivos")
+
+
+def upload(origem,destino):
+    nomeArquivo = origem.split('/')[-1]
+    service = conexaoDrive()    
+    parents = []
+
+    if(destino.find('/') == -1):
+        if(destino != "MeuDrive"):
+            dados = buscaDados(destino)
+            pai = dados[-1]
+            parents.append(pai['id'])        
+    else:    
+        dados = buscaDados(destino)
+        pai = dados[-2]
+        parents.append(pai['id'])
+ 
+    try:
+        service = conexaoDrive()    
+        file_metadata = {
+            'name': nomeArquivo,
+            'parents': parents
+        }                                                       # MIME TYPES: https://developers.google.com/drive/api/v3/ref-export-formats
+        media = MediaFileUpload(origem, mimetype='*/*')         # '*/*' => significa q qualquer tipo eh aceito. Há infinitos mime types...
+        file = service.files().create(
+            body=file_metadata,       
+            media_body=media,
+            fields='id'
+        ).execute()
+        return "Upload feito com sucesso"
+    
+    except FileNotFoundError:  
+        return "Caminho ou arquivo de origem inexistente."        
+  
+    except PermissionError:
+        return "Permissao negada."
+
+    except:
+        return "Destino inexistente"
 
 
 def moverArquivo(origem, destino):
