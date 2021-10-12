@@ -1,10 +1,12 @@
 from __future__ import print_function
-import os.path
+from tqdm import tqdm
+import os
+import io
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from googleapiclient.http import MediaFileUpload
+from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 
 
 CLIENT_SECRET_FILE = 'credentials.json'
@@ -32,40 +34,23 @@ def conexaoDrive():
     return service 
 
 
-def criarPasta(nomePasta):
-    contadorBarras = False
-    service = conexaoDrive()
-    nomeOriginal = nomePasta
-
-    for i in range(len(nomePasta)): # Se o usuario inserir Pasta1/Pasta2, por exemplo, precisamos chamar a funcao busca para saber se Pasta1 existe
-        if (nomePasta[i]=='/'):
-             contadorBarras=True
-
-    if (contadorBarras):            #Aqui chamamos a funcao busca caso seja encontrado um '/' no for acima
-        id_pai =  busca(nomePasta)
-        if (id_pai!=None):
-            temporario = nomePasta.split("/")
-            nomePasta = temporario[len(temporario)-1]
-  
-            file_metadata = {
-                'name':  nomePasta,
-                'parents': [id_pai],
-                'mimeType': 'application/vnd.google-apps.folder'
-            }
-        else:
-            return "O caminho especificado nao existe"
-
-        file = service.files().create(body=file_metadata,fields='id').execute()
-   
-    if ( not contadorBarras):               # O usuario quer inserir na raiz. Exemplo:  pasta Teste1 apenas, e nao Teste1/Teste2
-        file_metadata = {
-            'name': nomePasta,
-            'mimeType': 'application/vnd.google-apps.folder'
-        }
-        file = service.files().create(body=file_metadata,fields='id').execute()
+def criarPasta(caminho):
+    caminhoDrive,lixo,nomePasta = caminho.rpartition('/')
+    service = conexaoDrive()    
+    parents = []
+    if(caminho.find('/') != -1):
+        dados = buscaDados(caminhoDrive)
+        pai = dados[-1]
+        parents.append(pai['id'])
+    print(parents)    
+    file_metadata = {
+        'name': nomePasta,
+        'parents':parents,
+        'mimeType': 'application/vnd.google-apps.folder'
+    }
+    file = service.files().create(body=file_metadata,fields='id').execute()
     
-    return "Pasta " + nomePasta + " criada. Caminho: " + nomeOriginal 
-
+    print("Pasta " + nomePasta + " criada. Caminho: Meu Drive/ " + caminhoDrive)
 
 def listarDrive():
     service = conexaoDrive()
@@ -75,22 +60,52 @@ def listarDrive():
 
 
 def buscaDados(caminho):
-    service = conexaoDrive()        
-    listaCaminho = caminho.split("/")
-    listaIDs = 'root'
-    resultado = []
-    for nome in listaCaminho :
-        response = service.files().list(
-                q = f"name='{nome}' and '{listaIDs}' in parents",
+    service = conexaoDrive()                                            # inicia o serviço  
+    listaCaminho = caminho.split("/")                                   # cria uma lista em que cada elemento da lista é uma pasta do caminho
+    id_pai = 'root'                                                     # inicialmente o id pai é o root
+    resultado = []                                                      # armazena todos os dados das pastas durante o caminho
+    for nome in listaCaminho :                                          # para cada arquivo ou pasta do caminho
+        response = service.files().list(                                # faz um request desse arquivo ou pasta dentro do escopo "My Drive"      
+                q = f"name='{nome}' and '{id_pai}' in parents",         # pelo nome e que tenha como pai o ultimo valor de id_pai
                 spaces='drive',
         ).execute()
-        encontrado = response.get('files')[0]                
-        resultado.append(encontrado)
-        listaIDs = encontrado['id']
+        encontrado = response.get('files')[0]                           # recupera os dados do arquivo ou pasta encontrada      
+        resultado.append(encontrado)                                    # O resultado consiste dos dados de todos os arquivos e pastas do caminho        
+        id_pai = encontrado['id']                                       # atualiza o id_pai ao longo do caminho
         print(encontrado)
     print(resultado)
+    return resultado                                                    # Retorna o resultado
 
-    
+def downloadArquivo(localizacao,destino):                       
+    service = conexaoDrive()
+    dados = buscaDados(localizacao)                                     # Busca os dados dos arquivos ao longo da localização no drive                    
+    arquivo = dados[-1]                                                 # o arquivo que se deseja baixar é o ultimo dos dados
+    request = service.files().get_media(fileId=arquivo['id'])           # faz um request pra pegar a mídia do dado
+    fh = io.BytesIO()
+    downloader = MediaIoBaseDownload(fd=fh,request=request)             # prepara o downloader
+    terminou = False
+    progresso = tqdm(total=100)                                         # configura a barra de download
+    while not terminou:
+        status,terminou = downloader.next_chunk()                       # baixa o próximo pedaço
+        progresso.update(status.progress() * 100)                       # atualiza a barra de download
+
+    fh.seek(0)
+    with open(os.path.join(destino,arquivo['name']),'wb') as arquivo:   # cria o arquivo com o nome escolhido no destino desejado e preenche ele com o binário baixado
+        arquivo.write(fh.read())
+        arquivo.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
 def busca (nomePasta):
     service = conexaoDrive()
     page_token = None
