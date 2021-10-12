@@ -5,7 +5,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.http import MediaFileUpload
-
+import shutil
+from os.path import join
 # If modifying these scopes, delete the file token.json.
 def conexaoDrive():
     SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -117,16 +118,40 @@ def busca (nomePasta):
 
 
 
-#def upload(origem, destino):
-#    UPLOAD
- #   fmeiile_metadata = {'name': 'photo.jpg'}
- #   media = MediaFileUpload('photo.jpg', mimetype='image/jpeg')
- #   file = service.files().create(body=file_metadata,
- #                                       media_body=media,
- #                                       fields='id').execute()
+def upload(origem):
+ #  UPLOAD
+  #  source = join('C', 'Users', 'nando', 'AppData', 'Local', 'Packages','CanonicalGroupLimited.Ubuntu20.04onWindows_79rhkp1fndgsc','LocalState','rootfs','home','nandofab2011','Nando','TrabalhoDupla','photo.jpg')
+  #  destination = join('C', 'Users', 'nando', 'AppData', 'Local', 'Packages','CanonicalGroupLimited.Ubuntu20.04onWindows_79rhkp1fndgsc','LocalState','rootfs','home','nandofab2011','Nando','TrabalhoDupla','tentativa2','photo2.jpg')
+    
+  #
 
+    print(origem)
+    #shutil.move(source, destination)
+  #  shutil.copyfile(origem, destino)
+   
+   
 
- #   return  "Upload feito com sucesso"
+   # temporario = destino.split("/")
+   # nomeArquivo = temporario[len(temporario)-1]
+   
+    
+    #shutil.copyfile(origem, destino)
+  #  print(x)
+  #  import sys
+   # print(sys.path[1])
+
+    service = conexaoDrive()    
+    file_metadata = {'name': nomeArquivo}
+    
+    media = MediaFileUpload(nomeArquivo, mimetype='image/jpeg')
+    file = service.files().create(body=file_metadata,
+                                        media_body=media,
+                                        fields='id').execute()
+
+    print("oi")
+#    print("oi")
+
+    return  "Upload feito com sucesso"
 
 
 

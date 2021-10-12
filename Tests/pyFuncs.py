@@ -9,7 +9,12 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 
 
+<<<<<<< HEAD
+
+CLIENT_SECRET_FILE = 'client_secret_248993973959-p186h3ftohum7gb6hhrae3da0btge0d9.apps.googleusercontent.com.json'
+=======
 CLIENT_SECRET_FILE = 'credentials.json'
+>>>>>>> 01d2d2c310a84b75ac284be78e33d4182536f0bb
 API_NAME = 'drive'
 API_VERSION = "v3"
 SCOPES = ['https://www.googleapis.com/auth/drive'] 
