@@ -44,12 +44,12 @@ def criarPasta(caminho):
     if(caminho.find('/') != -1):
         dados = buscaDados(caminhoDrive)
         pai = dados[-1]
-        #print(pai)
+        print(pai)
         if (pai=="1"):
             print( "Caminho de destino inexistente")
             return 1
         parents.append(pai['id'])
-    print(parents)   
+   # print(parents)   
     
     
     file_metadata = {
@@ -132,44 +132,72 @@ def downloadArquivo(localizacao,destino):
         print("Nao eh possivel baixar pastas. Somente arquivos")
 
 
+def moverArquivo(origem, destino):
+    try:
+        id_origem =[]
+        service=conexaoDrive()
+        dados_origem = buscaDados(origem)
+        dados_origem= dados_origem[-1]
+        id_origem.append(dados_origem['id'])
+        id_origem = id_origem[0]
+        #print(id_origem)
+        id_destino =[]
+        dados_destino = buscaDados(destino)
+        dados_destino= dados_destino[-1]
+        id_destino.append(dados_destino['id'])
+        id_destino = id_destino[0]
+        # print(id_destino)
+        # Retrieve the existing parents to remove
+        file = service.files().get(fileId=id_origem,
+                                     fields='parents').execute()
+        previous_parents = ",".join(file.get('parents'))
+        #Move the file to the new folder
+        file = service.files().update(fileId=id_origem,
+                                addParents=id_destino,
+                                removeParents=previous_parents,
+                                fields='id, parents').execute()
+    except TypeError:
+        print("O arquivo de origem ou o local de destino nao existe")
+    except:
+        print("Erro desconhecido")
 
 
 
 
 
-def busca (nomePasta):
-    service = conexaoDrive()
-    page_token = None
-    
-    temporario = nomePasta.split("/")
+#def busca (nomePasta):
+  #  service = conexaoDrive()
+ #   page_token = None
+   # 
+   # temporario = nomePasta.split("/")
    # print(temporario)
-    nomePasta = temporario[len(temporario)-2]
+    #nomePasta = temporario[len(temporario)-2]
    # print(nomePasta1)
     
-    while True:
-        response =   service.files().list(q= "mimeType='application/vnd.google-apps.folder' and name = '%s' " %(nomePasta),
-                                                    spaces='drive',
-                                                    fields='nextPageToken, files(id, name)',
-                                                    pageToken=page_token).execute()
+    #while True:
+   # response =   service.files().list(q= "mimeType='application/vnd.google-apps.folder' and name = '%s' " %(nomePasta),
+    #                                                spaces='drive',
+     #                                               fields='nextPageToken, files(id, name)',
+      #                                              pageToken=page_token).execute()
     
         #print(response.get('files',[]))
-        if  (response.get('files',[]) ==[]):
-            return None
-        #if (response.get('files',[])) 
+   # if  (response.get('files',[]) ==[]):
+ #           return None
+    #    #if (response.get('files',[])) 
            # return "O arquivo " + nomePasta + " nao foi encontrado" 
-        for file in response.get('files', []):
+  #  for file in response.get('files', []):
         
        # Process change
            # print ('Found file: %s (%s)' % (file.get('name'), file.get('id')))
-            break
+   #     break
             #page_token = response.get('nextPageToken', None)
        
        #if page_token is None:
         #    break
-        break 
+   #     break 
+#
 
-
-    return file.get('id')
+  #  return file.get('id')
 
 
 
@@ -178,7 +206,7 @@ def busca (nomePasta):
  #   fmeiile_metadata = {'name': 'photo.jpg'}
  #   media = MediaFileUpload('photo.jpg', mimetype='image/jpeg')
  #   file = service.files().create(body=file_metadata,
- #                                       media_body=media,
+ ##                                       media_body=media,
  #                                       fields='id').execute()
 
 
