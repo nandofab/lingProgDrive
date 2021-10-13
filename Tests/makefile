@@ -2,7 +2,7 @@ CC = g++
 LD = g++
 
 CFLAGS = -Wall -fpie $(shell python3-config --cflags --embed) 
-LFLAGS = -Wall $(shell python3-config --ldflags --embed)
+LFLAGS = -Wall $(shell python3-config --ldflags --embed )
 
 TESTE1OBJS = teste1.o
 TESTE2OBJS = teste2.o 

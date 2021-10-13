@@ -71,7 +71,7 @@
             }
     };
 
-    CPyObject usePyFunc(char* fileName,char* functionName, vector <char*> args){
+    CPyObject usePyFunc(const char* fileName,char* functionName, vector <char*> args){
         CPyInstance instance;
 
         CPyObject pyfileName, pyModule, pyFunctionName, pyFunctionArgs, pyValueReturned;     // Tudo que vem ou vai do python é um PyObject
