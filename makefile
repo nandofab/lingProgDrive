@@ -8,13 +8,13 @@ TESTE1OBJS = teste1.o
 TESTE2OBJS = teste2.o 
 TESTE3OBJS = teste3.o 
 TESTE4OBJS = teste4.o 
-MAINOBJS = main.o 
+DRIVEPPOBJS = Drivepp.o main.o
 
 DRIVEPP = teste1\
 		  teste2\
 		  teste3\
 		  teste4\
-		  main
+		  Drivepp
 
 .cpp.o:
 	$(CC) $(CFLAGS) -c $<
@@ -33,8 +33,8 @@ teste3: $(TESTE3OBJS)
 teste4: $(TESTE4OBJS)
 	$(LD) -o $@ $(TESTE4OBJS) $(LFLAGS) 
 
-main: $(MAINOBJS)
-	$(LD) -o $@ $(MAINOBJS) $(LFLAGS) 
+Drivepp: $(DRIVEPPOBJS)
+	$(LD) -o $@ $(DRIVEPPOBJS) $(LFLAGS) 
 
 
 clean:
