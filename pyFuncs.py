@@ -59,15 +59,29 @@ def criarPasta(caminho):
 def listarDrive(caminho):
     try:
         service = conexaoDrive()
-        dados = buscaDados(caminho)
-        if (dados == None):
-            raise(FileNotFoundError) 
-        if dados[-1]['mimeType'] != 'application/vnd.google-apps.folder':
-            raise 
-        for file in response.get('files', []):
-                print(f"Name = {file.get('name')} ID = {file.get('id')}  Parents= {file.get('parents')}")
-    except FileNotFoundError:
-        print( "***** Erro: Destino inexistente *****")
+        id_pai = ''
+        if (caminho == 'MeuDrive'):
+            id_pai = 'root'
+        else:
+            dados = buscaDados(caminho)        
+            if dados[-1]['mimeType'] != 'application/vnd.google-apps.folder':
+                raise TypeError
+            id_pai = dados[-1]['id']
+        request = service.files().list(q=f"'{id_pai}' in parents").execute()
+        arquivos = request.get('files')
+        nextPageToken = request.get('nextPageToken')
+        while nextPageToken:                                            # se o request foi didivido em páginas
+            request = service.files().list(                                
+                q = f"'{id_pai}' in parents",
+                pageToken = nextPageToken
+            ).execute()
+            arquivos.extend(request.get('files'))                       # extende o resultado do request
+            nextPageToken = request.get('nextPageToken')                # verifica se tem outra pagina       
+        print('%-70s %s' %('          ***** Nome *****','          ***** Id *****'))
+        for arquivo in arquivos:
+            print('%-70s %s' %(arquivo['name'],arquivo['id']))
+    except TypeError:
+        print( "***** Erro: caminho não se refere a uma pasta *****")
 
 def buscaDados(caminho):
     try:
@@ -76,13 +90,23 @@ def buscaDados(caminho):
         id_pai = 'root'                                                     # inicialmente o id pai é o root
         resultado = []                                                      # armazena todos os dados das pastas durante o caminho
         for nome in listaCaminho :                                          # para cada arquivo ou pasta do caminho
-            response = service.files().list(                                # faz um request desse arquivo ou pasta dentro do escopo "My Drive"      
+            request = service.files().list(                                 # faz um request desse arquivo ou pasta dentro do escopo "My Drive"      
                     q = f"name='{nome}' and '{id_pai}' in parents",         # pelo nome e que tenha como pai o ultimo valor de id_pai
                     spaces='drive',
             ).execute()
-            if(response.get('files')== []):
+            if(request.get('files')== []):
                 raise(TypeError)
-            encontrado = response.get('files')[0]                           # recupera os dados do arquivo ou pasta encontrada      
+            arquivos = request.get('files')
+            nextPageToken = request.get('nextPageToken')
+            while nextPageToken:                                            # se o request foi didivido em páginas
+                request = service.files().list(                             # faz um request desse arquivo ou pasta dentro do escopo "My Drive"      
+                    q = f"name='{nome}' and '{id_pai}' in parents",         # pelo nome e que tenha como pai o ultimo valor de id_pai
+                    spaces='drive',
+                    pageToken = nextPageToken
+                ).execute()
+                arquivos.extend(request.get('files'))                       # extende o resultado do request
+                nextPageToken = request.get('nextPageToken')                # verifica se tem outra pagina
+            encontrado = arquivos[0]                                        # recupera os dados do arquivo ou pasta encontrada      
             resultado.append(encontrado)                                    # O resultado consiste dos dados de todos os arquivos e pastas do caminho        
             id_pai = encontrado['id']                                       # atualiza o id_pai ao longo do caminho
         return resultado                                                    # Retorna o resultado
