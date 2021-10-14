@@ -24,11 +24,8 @@ CPyObject Drivepp::receberComando(const string& nomeDaFuncao,const vector<string
     }
     else
         throw PyFunctionException();
-    returnedValueFromPy = usePyDriveFunc("pyFuncs",nomeDaFuncao,argumentos);                                    // executa a função desejada em python retornando um CPyObject
+    returnedValueFromPy = usePyDriveFunc("pyFuncs",nomeDaFuncao,argumentos);   // executa a função desejada em python retornando um CPyObject
     return returnedValueFromPy;
-
-  //  auto cResult = _PyUnicode_AsString(returnedValueFromPy);                 // converte o resultado de CPyObject para o desejado em C
-  //       cout<<cResult<<endl;
 }
 
 CPyObject Drivepp::usePyDriveFunc(const string& fileName,const string& functionName,const  vector <string>& args){

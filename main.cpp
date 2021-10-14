@@ -16,14 +16,9 @@ int main(int argc, char *argv[])
         for (int cArg=2;cArg < argc;cArg++)                                 // trabalhar com vectors é mais prático e argv vem com argumentos q n temos interesse para a funcao do python
             args.push_back(argv[cArg]);
         
-// CPyObject pyResultado = usePyFunc("pyFuncs",nomeDafuncao,args); // executa a função desejada em python retornando um CPyObject
-//	auto cResultado = _PyUnicode_AsString(pyResultado);                 // converte o resultado de CPyObject para o desejado em C
-  //     	cout<<cResultado<<endl;                                             // printa esse resultado
-//=======
-      CPyObject pyResult =   myDrive.receberComando(nomeDafuncao,args);
-      auto cResult = _PyUnicode_AsString(pyResult);
-      cout<<cResult<<endl;      
-      //>>>>>>> 10103987b0f49941ab6c6c1dc15ed9e70298519e:main.cpp
+        CPyObject pyResultado = myDrive.receberComando(nomeDafuncao,args); // executa a função desejada em python retornando um CPyObject
+        auto cResultado = _PyUnicode_AsString(pyResultado);                 // converte o resultado de CPyObject para o desejado em C
+        cout<<cResultado<<endl;                                             // printa esse resultado  
     }   
     catch(PyModuleException& exception){
         cout << "***** Erro: " << exception.what() << " *****" <<endl;

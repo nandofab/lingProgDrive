@@ -14,6 +14,5 @@
 			string getMimeType(string caminho);
 		private:
 			map <string,string> mimeTypes;
-
 	};
 #endif
