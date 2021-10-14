@@ -1,14 +1,14 @@
-#define PY_SSIZE_T_CLEAN
-#include "CpyTranslator.h"
 #include <iostream>
 #include <vector>
+#include <string>
+#include "Drivepp.h"
 
 using namespace std;
 
 int main(int argc, char *argv[])
 {
-    CPyInstance instance;
-    vector <char*> args;    
+    Drivepp myDrive;
+    vector <string> args;    
     try{
         if(argc < 2)                                                        // Se n tiver o nome do programa + nome da funcao desejada n tem argumentos suficientes para executar a funcao
             throw cArgsException();
@@ -16,9 +16,7 @@ int main(int argc, char *argv[])
         for (int cArg=2;cArg < argc;cArg++)                                 // trabalhar com vectors é mais prático e argv vem com argumentos q n temos interesse para a funcao do python
             args.push_back(argv[cArg]);
         
-        CPyObject pyResultado = usePyFunc("pyFuncs",nomeDafuncao,args); // executa a função desejada em python retornando um CPyObject
-        //auto cResultado = _PyUnicode_AsString(pyResultado);                 // converte o resultado de CPyObject para o desejado em C
-        //cout<<cResultado<<endl;                                             // printa esse resultado
+        myDrive.receberComando(nomeDafuncao,args);
     }   
     catch(PyModuleException& exception){
         cout << "***** Erro: " << exception.what() << " *****" <<endl;

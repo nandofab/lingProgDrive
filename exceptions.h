@@ -48,7 +48,6 @@
             virtual const char* what() const throw() {
                 return "pyFuncInexistenteException!";
             }
-    };
-
+    }; 
     
 #endif
