@@ -1,15 +1,19 @@
 #ifndef MIMETYPES_H_
     #define MIMETYPES_H_
-#include <string.h>
+	#include <iostream>
+	#include <string.h>
+	#include <map>
+	#include <fstream>
+	#include "exceptions.h"
 
-class MimeTypes {
-  public:
-    static const char* getType(const char * path);
-    static const char* getExtension(const char * type, int skip = 0);
+	using namespace std;
 
-  private:
-    static MimeTypes::entry types[347];
+	class MimeTypes {
+		public:
+			MimeTypes();
+			string getMimeType(string caminho);
+		private:
+			map <string,string> mimeTypes;
 
-};
-
+	};
 #endif
