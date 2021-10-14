@@ -52,9 +52,9 @@ def criarPasta(caminho):
         }
         service.files().create(body=file_metadata,fields='id').execute()
         
-        print("Pasta " + nomePasta + " criada com sucesso!\nCaminho: /" + caminhoDrive)
+        return "Pasta " + nomePasta + " criada com sucesso! Caminho: /" + caminhoDrive
     except:
-        print("***** Erro: A pasta onde você deseja criar uma nova ainda não existe *****") 
+        return "***** Erro: A pasta onde você deseja criar uma nova ainda não existe *****" 
 
 def listarDrive(caminho):
     try:
@@ -136,13 +136,14 @@ def downloadArquivo(localizacao,destino):
         fh.seek(0)
         with open(os.path.join(destino,arquivo['name']),'wb') as arquivo:   # cria o arquivo com o nome escolhido no destino desejado e preenche ele com o binário baixado
             arquivo.write(fh.read())
-            arquivo.close()   
+            arquivo.close() 
+        return "Download feito com sucesso"
     except TypeError:
-        print( "***** Erro: A origem inexiste no drive *****")
+        return "***** Erro: A origem inexiste no drive *****"
     except FileNotFoundError:
-        print( "***** Erro: Destino inexistente *****")
+        return  "***** Erro: Destino inexistente *****"
     except :
-        print( "***** Erro: Nao eh possivel baixar pastas,somente arquivos *****")
+        return  "***** Erro: Nao eh possivel baixar pastas,somente arquivos *****"
 
 
 def uploadArquivo(origem,destino):
@@ -169,12 +170,12 @@ def uploadArquivo(origem,destino):
             media_body=media,
             fields='id'
         ).execute()
-        print( "Upload feito com sucesso")
+        return  "Upload feito com sucesso"
     
     except PermissionError:
-        print( "***** Erro: Permissao negada. *****")
+        return "***** Erro: Permissao negada. *****"
     except:
-        print( "***** Erro: Destino inexistente *****")
+        return "***** Erro: Destino inexistente *****"
 
 
 def moverArquivo(origem, destino):
@@ -211,6 +212,9 @@ def moverArquivo(origem, destino):
             sys.stdout.write("[%-20s] %d%%" % ('='*i, 5*i))
             sys.stdout.flush()
             sleep(0.25)  
-        print("\nArquivo movido com sucesso")      
+        return "\nArquivo movido com sucesso"      
+   
+    except TypeError:
+        return "***** Erro:O arquivo de origem ou o local de destino nao existe ***** "
     except:
-        print ("***** Erro:O arquivo de origem ou o local de destino nao existe ***** ")
+        return "***** Erro desconhecido ***** "

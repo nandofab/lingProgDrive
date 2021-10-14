@@ -12,7 +12,7 @@
 
     class Drivepp{
         public:
-            void receberComando(const string&,const vector<string>&);
+            CPyObject receberComando(const string&,const vector<string>&);
         private:            
             CPyObject usePyDriveFunc(const string& ,const string& ,const vector <string>& );
     };
