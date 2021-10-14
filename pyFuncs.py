@@ -67,7 +67,7 @@ def listarDrive(caminho):
             if dados[-1]['mimeType'] != 'application/vnd.google-apps.folder':
                 raise TypeError
             id_pai = dados[-1]['id']
-        request = service.files().list(q=f"'{id_pai}' in parents").execute()
+        request = service.files().list(q=f"'{id_pai}' in parents and trashed = false").execute()
         arquivos = request.get('files')
         nextPageToken = request.get('nextPageToken')
         while nextPageToken:                                            # se o request foi didivido em páginas
