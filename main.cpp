@@ -9,7 +9,7 @@ int main(int argc, char *argv[]){
     Drivepp myDrive;
     vector <string> args;    
     try{
-        if(argc <= 2)                                                        // Se n tiver o nome do programa + nome da funcao desejada n tem argumentos suficientes para executar a funcao
+        if(((argc == 2) && (strcmp(argv[1],"help")!=0)) || (argc==1))                                                       // Se n tiver o nome do programa + nome da funcao desejada n tem argumentos suficientes para executar a funcao
             throw cArgsException();
         char* nomeDafuncao = argv[1];
         for (int cArg=2;cArg < argc;cArg++)                                 // trabalhar com vectors é mais prático e argv vem com argumentos q n temos interesse para a funcao do python
