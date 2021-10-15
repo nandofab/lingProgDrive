@@ -72,7 +72,7 @@ def listarDrive(caminho):
         nextPageToken = request.get('nextPageToken')
         while nextPageToken:                                            # se o request foi didivido em páginas
             request = service.files().list(                                
-                q = f"'{id_pai}' in parents",
+                q = f"'{id_pai}' in parents and trashed = false",
                 pageToken = nextPageToken
             ).execute()
             arquivos.extend(request.get('files'))                       # extende o resultado do request
@@ -80,8 +80,10 @@ def listarDrive(caminho):
         print('%-70s %s' %('          ***** Nome *****','          ***** Id *****'))
         for arquivo in arquivos:
             print('%-70s %s' %(arquivo['name'],arquivo['id']))
+        return "\n Listagem Feita com sucesso"
     except TypeError:
         print( "***** Erro: caminho não se refere a uma pasta *****")
+        return "\n Falha ao realizar a listagem"
 
 def buscaDados(caminho):
     try:
