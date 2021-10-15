@@ -1,6 +1,6 @@
 #include "Drivepp.h"
 
-CPyObject Drivepp::receberComando(const string& nomeDaFuncao,const vector<string>& argumentos ){   
+CPyObject Drivepp::receberComando(const string& nomeDaFuncao,vector<string>& argumentos ){   
     CPyObject returnedValueFromPy;
     if(nomeDaFuncao.compare("criarPasta") == 0){
         if (argumentos.size() > 1)
@@ -17,6 +17,8 @@ CPyObject Drivepp::receberComando(const string& nomeDaFuncao,const vector<string
     else if(nomeDaFuncao.compare("uploadArquivo") == 0){
         if (argumentos.size() > 2)
             throw cArgsException();
+        MimeTypes arquivo;
+        argumentos.push_back(arquivo.getMimeType(argumentos[0]));
     }
     else if(nomeDaFuncao.compare("moverArquivo") == 0){
         if (argumentos.size() >2)
@@ -56,7 +58,15 @@ CPyObject Drivepp::usePyDriveFunc(const string& fileName,const string& functionN
                                 PyUnicode_FromString(args[0].c_str()), // primeiro argumento
                                 PyUnicode_FromString(args[1].c_str())  // segundo argumento
                             ); // PyTuple_Pack (numero de argumentos,argumentos convertidos para PyObject)
-                            break;                                       
+                            break;
+                        case 3:
+                            pyFunctionArgs = PyTuple_Pack(
+                                args.size(),                   // Quantidade de argumentos  
+                                PyUnicode_FromString(args[0].c_str()), // primeiro argumento
+                                PyUnicode_FromString(args[1].c_str()), // segundo argumento
+                                PyUnicode_FromString(args[2].c_str())  // terceiro argumento
+                            ); // PyTuple_Pack (numero de argumentos,argumentos convertidos para PyObject)
+                            break;                                        
                         default:
                             throw pyArgsException();
                             break;

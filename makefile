@@ -2,13 +2,13 @@ CC = g++
 LD = g++
 
 CFLAGS = -Wall -fpie $(shell python3-config --cflags --embed) 
-LFLAGS = -Wall $(shell python3-config --ldflags --embed )
+LFLAGS = -Wall $(shell python3-config --ldflags --embed)
 
 TESTE1OBJS = teste1.o
 TESTE2OBJS = teste2.o 
 TESTE3OBJS = teste3.o 
 TESTE4OBJS = teste4.o 
-DRIVEPPOBJS = Drivepp.o main.o
+DRIVEPPOBJS = Drivepp.o main.o MimeTypes.o
 
 DRIVEPP = teste1\
 		  teste2\
@@ -35,7 +35,6 @@ teste4: $(TESTE4OBJS)
 
 Drivepp: $(DRIVEPPOBJS)
 	$(LD) -o $@ $(DRIVEPPOBJS) $(LFLAGS) 
-
 
 clean:
 	rm -f *.o $(DRIVEPP)

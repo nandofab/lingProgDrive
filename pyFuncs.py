@@ -146,9 +146,9 @@ def downloadArquivo(localizacao,destino):
         return  "***** Erro: Nao eh possivel baixar pastas,somente arquivos *****"
 
 
-def uploadArquivo(origem,destino):
+def uploadArquivo(origem,destino,mimeType):
     if not os.path.exists(origem):
-            raise(FileNotFoundError)
+        raise(FileNotFoundError)
     nomeArquivo = origem.split('/')[-1]
     service = conexaoDrive()    
     parents = []
@@ -163,8 +163,8 @@ def uploadArquivo(origem,destino):
         file_metadata = {
             'name': nomeArquivo,
             'parents': parents
-        }                                                       # MIME TYPES: https://developers.google.com/drive/api/v3/ref-export-formats
-        media = MediaFileUpload(origem, mimetype='*/*')         # '*/*' => significa q qualquer tipo eh aceito. Há infinitos mime types...
+        }                                                           # MIME TYPES: https://developers.google.com/drive/api/v3/ref-export-formats
+        media = MediaFileUpload(origem, mimetype=mimeType)          # '*/*' => significa q qualquer tipo eh aceito. Há infinitos mime types...
         file = service.files().create(
             body=file_metadata,       
             media_body=media,
