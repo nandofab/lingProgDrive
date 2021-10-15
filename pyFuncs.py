@@ -52,9 +52,9 @@ def criarPasta(caminho):
         }
         service.files().create(body=file_metadata,fields='id').execute()
         
-        return "Pasta criada com sucesso!" 
+        return 0#"Pasta criada com sucesso!" 
     except:
-        return "***** Erro: A pasta onde você deseja criar uma nova ainda não existe *****" 
+        return 1#"***** Erro: A pasta onde você deseja criar uma nova ainda não existe *****" 
 
 def listarDrive(caminho):
     try:
@@ -65,7 +65,7 @@ def listarDrive(caminho):
         else:
             dados = buscaDados(caminho)        
             if dados[-1]['mimeType'] != 'application/vnd.google-apps.folder':
-                raise TypeError
+                raise ValueError
             id_pai = dados[-1]['id']
         request = service.files().list(q=f"'{id_pai}' in parents and trashed = false").execute()
         arquivos = request.get('files')
@@ -80,10 +80,13 @@ def listarDrive(caminho):
         print('%-70s %s' %('          ***** Nome *****','          ***** Id *****'))
         for arquivo in arquivos:
             print('%-70s %s' %(arquivo['name'],arquivo['id']))
-        return "\nListagem Feita com sucesso"
-    except TypeError:
-        print( "***** Erro: caminho não se refere a uma pasta *****")
-        return "\nFalha ao realizar a listagem"
+        return 0#"\nListagem Feita com sucesso"
+    except ValueError:
+        #print( "***** Erro: caminho não se refere a uma pasta *****")
+        return 1#"\nFalha ao realizar a listagem"
+    except:
+        return 2
+
 
 def buscaDados(caminho):
     try:
@@ -97,7 +100,7 @@ def buscaDados(caminho):
                     spaces='drive',
             ).execute()
             if(request.get('files')== []):
-                raise(TypeError)
+                raise(ValueError)
             arquivos = request.get('files')
             nextPageToken = request.get('nextPageToken')
             while nextPageToken:                                            # se o request foi didivido em páginas
@@ -112,8 +115,11 @@ def buscaDados(caminho):
             resultado.append(encontrado)                                    # O resultado consiste dos dados de todos os arquivos e pastas do caminho        
             id_pai = encontrado['id']                                       # atualiza o id_pai ao longo do caminho
         return resultado                                                    # Retorna o resultado
-    except TypeError:
-        print( "***** Erro: Este caminho inexiste no drive *****")
+    except ValueError:
+        
+        print( "************************************************ ERRO ************************************************")
+        print( f"\t O caminho {caminho} inexiste no drive ")
+        print( "******************************************************************************************************")        
         sys.exit()
 
 def downloadArquivo(localizacao,destino):                       
@@ -139,18 +145,20 @@ def downloadArquivo(localizacao,destino):
         with open(os.path.join(destino,arquivo['name']),'wb') as arquivo:   # cria o arquivo com o nome escolhido no destino desejado e preenche ele com o binário baixado
             arquivo.write(fh.read())
             arquivo.close() 
-        return "\nDownload feito com sucesso"
-    except TypeError:
-        return "***** Erro: A origem inexiste no drive *****"
+        return  0 #"\nDownload feito com sucesso"
     except FileNotFoundError:
-        return  "***** Erro: Destino inexistente *****"
+        return  1 #"***** Erro: Destino inexistente *****"
     except :
-        return  "***** Erro: Nao eh possivel baixar pastas,somente arquivos *****"
+        return  2 #"***** Erro: Nao eh possivel baixar pastas,somente arquivos *****"
 
 
 def uploadArquivo(origem,destino,mimeType):
     if not os.path.exists(origem):
         raise(FileNotFoundError)
+
+    if os.path.isdir(origem):
+        raise(IsADirectoryError)
+    
     nomeArquivo = origem.split('/')[-1]
     service = conexaoDrive()    
     parents = []
@@ -183,12 +191,13 @@ def uploadArquivo(origem,destino,mimeType):
         if terminou:
             progresso.update(100)
 
-        return  "\nUpload feito com sucesso"
-    
-    except PermissionError:
-        return "***** Erro: Permissao negada. *****"
+        return  0 #"\nUpload feito com sucesso"
+    except FileNotFoundError:
+        return  1 #"***** Erro: Destino inexistente *****"
+    except IsADirectoryError:
+        return  2 #"***** Erro: Destino inexistente *****"   
     except:
-        return "***** Erro: Destino inexistente *****"
+        return  3 #"***** Erro: Destino inexistente *****"
 
 
 def moverArquivo(origem, destino):
@@ -218,8 +227,6 @@ def moverArquivo(origem, destino):
  
         for i in trange(100):
             sleep(0.01)  
-        return "\nArquivo movido com sucesso"   
-    except TypeError:
-        return "***** Erro:O arquivo de origem ou o local de destino nao existe ***** "
+        return 0#"\nArquivo movido com sucesso"   
     except:
-        return "***** Erro: Impossivel mover arquivos ***** "
+        return 1#"***** Erro: Impossivel mover arquivos ***** "

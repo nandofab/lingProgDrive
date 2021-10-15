@@ -3,10 +3,9 @@
 MimeTypes::MimeTypes(){
     fstream arquivo;
     arquivo.open("mimetypes.txt",fstream::in);
-    if (!arquivo.is_open()){    // Retorna um erro se n conseguir abrir o arquivo
-        cout << "Erro ao abrir arquivo"<<endl;
-        return;
-    }
+    if (!arquivo.is_open())    // Retorna um erro se n conseguir abrir o arquivo
+        throw MimeTypeFileException();
+
     bool vazio = arquivo.peek() == EOF;
     if (!vazio){
         while(arquivo.good()){
@@ -22,10 +21,10 @@ MimeTypes::MimeTypes(){
 string MimeTypes::getMimeType(string caminho){
     fstream arquivo(caminho);
     if(!arquivo.good())
-        throw cArgsException();        
+        throw MimeTypeFileNotFound();        
     size_t pos = caminho.rfind(".");
     if (pos == string::npos)
-        throw cArgsException();    
+        throw MimeTypeFileNotFound();    
     string tipo = caminho.substr(pos);
     return mimeTypes[tipo];
 }
