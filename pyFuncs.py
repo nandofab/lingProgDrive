@@ -1,5 +1,5 @@
 from __future__ import print_function
-from tqdm import tqdm
+from tqdm import tqdm,trange
 import os
 import io
 from googleapiclient.discovery import build
@@ -52,7 +52,7 @@ def criarPasta(caminho):
         }
         service.files().create(body=file_metadata,fields='id').execute()
         
-        return "Pasta " + nomePasta + " criada com sucesso! Caminho: /" + caminhoDrive
+        return "Pasta criada com sucesso!" 
     except:
         return "***** Erro: A pasta onde você deseja criar uma nova ainda não existe *****" 
 
@@ -80,10 +80,10 @@ def listarDrive(caminho):
         print('%-70s %s' %('          ***** Nome *****','          ***** Id *****'))
         for arquivo in arquivos:
             print('%-70s %s' %(arquivo['name'],arquivo['id']))
-        return "\n Listagem Feita com sucesso"
+        return "\nListagem Feita com sucesso"
     except TypeError:
         print( "***** Erro: caminho não se refere a uma pasta *****")
-        return "\n Falha ao realizar a listagem"
+        return "\nFalha ao realizar a listagem"
 
 def buscaDados(caminho):
     try:
@@ -139,7 +139,7 @@ def downloadArquivo(localizacao,destino):
         with open(os.path.join(destino,arquivo['name']),'wb') as arquivo:   # cria o arquivo com o nome escolhido no destino desejado e preenche ele com o binário baixado
             arquivo.write(fh.read())
             arquivo.close() 
-        return "Download feito com sucesso"
+        return "\nDownload feito com sucesso"
     except TypeError:
         return "***** Erro: A origem inexiste no drive *****"
     except FileNotFoundError:
@@ -166,13 +166,24 @@ def uploadArquivo(origem,destino,mimeType):
             'name': nomeArquivo,
             'parents': parents
         }                                                           # MIME TYPES: https://developers.google.com/drive/api/v3/ref-export-formats
-        media = MediaFileUpload(origem, mimetype=mimeType)          # '*/*' => significa q qualquer tipo eh aceito. Há infinitos mime types...
-        file = service.files().create(
+        media = MediaFileUpload(origem, mimetype=mimeType,resumable=True)          # '*/*' => significa q qualquer tipo eh aceito. Há infinitos mime types...
+        request = service.files().create(
             body=file_metadata,       
             media_body=media,
             fields='id'
-        ).execute()
-        return  "Upload feito com sucesso"
+        )
+        media.stream()
+        terminou = False
+        progresso = tqdm(total=100)
+        
+        while not terminou:
+            status,terminou = request.next_chunk()
+            if status:
+                progresso.update(status.progress() *100)
+        if terminou:
+            progresso.update(100)
+
+        return  "\nUpload feito com sucesso"
     
     except PermissionError:
         return "***** Erro: Permissao negada. *****"
@@ -182,22 +193,18 @@ def uploadArquivo(origem,destino,mimeType):
 
 def moverArquivo(origem, destino):
     try:
-        id_origem =[]
         service=conexaoDrive()
+
         dados_origem = buscaDados(origem)
-        if (dados_origem == None):
-            raise(TypeError)  
         dados_origem= dados_origem[-1]
-        id_origem.append(dados_origem['id'])
-        id_origem = id_origem[0]
-        #print(id_origem)
-        id_destino =[]
-        dados_destino = buscaDados(destino)
-        if (dados_destino == None):
-            raise(TypeError)  
-        dados_destino= dados_destino[-1]
-        id_destino.append(dados_destino['id'])
-        id_destino = id_destino[0]
+        id_origem = dados_origem['id']
+
+        if destino != 'MeuDrive':
+            dados_destino = buscaDados(destino)
+            dados_destino = dados_destino[-1]
+            id_destino = dados_destino['id']
+        else:
+            id_destino = 'root'
 
         # Retrieve the existing parents to remove
         file = service.files().get(fileId=id_origem,
@@ -209,14 +216,10 @@ def moverArquivo(origem, destino):
                                 removeParents=previous_parents,
                                 fields='id, parents').execute()
  
-        for i in range(21):
-            sys.stdout.write('\r')
-            sys.stdout.write("[%-20s] %d%%" % ('='*i, 5*i))
-            sys.stdout.flush()
-            sleep(0.25)  
-        return "\nArquivo movido com sucesso"      
-   
+        for i in trange(100):
+            sleep(0.01)  
+        return "\nArquivo movido com sucesso"   
     except TypeError:
         return "***** Erro:O arquivo de origem ou o local de destino nao existe ***** "
     except:
-        return "***** Erro desconhecido ***** "
+        return "***** Erro: Impossivel mover arquivos ***** "
